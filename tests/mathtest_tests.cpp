@@ -1,5 +1,5 @@
-#include "pch.h"
 #include "mathtest.hpp"
+#include <gtest/gtest.h>
 
 TEST(MathTestTest, TestConstructorDefault) {
 
