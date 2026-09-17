@@ -1,9 +1,9 @@
 #include "mathtest.hpp"
-#include <random>
-#include <iostream>
 #include <iomanip>
-#include <sstream>
+#include <iostream>
 #include <limits>
+#include <random>
+#include <sstream>
 
 Task::Task() {
   std::random_device rd;
@@ -13,18 +13,27 @@ Task::Task() {
   num1 = distrib(gen);
   num2 = distrib(gen);
   int oper = distrib2(gen);
-  if (oper == 1) {
+  switch (oper) {
+  case 1: {
     op = OP_ADD;
     answer = num1 + num2;
-  } else if (oper == 2) {
+    break;
+  }
+  case 2: {
     op = OP_SUBTRACT;
     answer = num1 - num2;
-  } else if (oper == 3) {
+    break;
+  }
+  case 3: {
     op = OP_MULTIPLICATE;
     answer = num1 * num2;
-  } else if (oper == 4) {
+    break;
+  }
+  case 4: {
     op = OP_DIVIDE;
     answer = num1 / num2;
+    break;
+  }
   }
 }
 
@@ -36,18 +45,27 @@ Task::Task(int min, int max) {
   num1 = distrib(gen);
   num2 = distrib(gen);
   int oper = distrib2(gen);
-  if (oper == 1) {
+  switch (oper) {
+  case 1: {
     op = OP_ADD;
     answer = num1 + num2;
-  } else if (oper == 2) {
+    break;
+  }
+  case 2: {
     op = OP_SUBTRACT;
     answer = num1 - num2;
-  } else if (oper == 3) {
+    break;
+  }
+  case 3: {
     op = OP_MULTIPLICATE;
     answer = num1 * num2;
-  } else if (oper == 4) {
+    break;
+  }
+  case 4: {
     op = OP_DIVIDE;
     answer = num1 / num2;
+    break;
+  }
   }
 }
 
@@ -57,27 +75,40 @@ Task::Task(int min, int max, Operation operation) {
   std::uniform_int_distribution<int> distrib(min, max);
   num1 = distrib(gen);
   num2 = distrib(gen);
-  if (operation == OP_ADD) {
+  switch (operation) {
+  case OP_ADD: {
     op = OP_ADD;
     answer = num1 + num2;
-  } else if (operation == OP_SUBTRACT) {
+    break;
+  }
+  case OP_SUBTRACT: {
     op = OP_SUBTRACT;
     answer = num1 - num2;
-  } else if (operation == OP_MULTIPLICATE) {
+    break;
+  }
+  case OP_MULTIPLICATE: {
     op = OP_MULTIPLICATE;
     answer = num1 * num2;
-  } else if (operation == OP_DIVIDE) {
+    break;
+  }
+  case OP_DIVIDE: {
     op = OP_DIVIDE;
     answer = num1 / num2;
+    break;
+  }
   }
 }
 
-static const char* op_symbol(Operation op) {
+static const char *op_symbol(Operation op) {
   switch (op) {
-    case OP_ADD:         return "+";
-    case OP_SUBTRACT:    return "-";
-    case OP_MULTIPLICATE:return "*";
-    case OP_DIVIDE:      return "/";
+  case OP_ADD:
+    return "+";
+  case OP_SUBTRACT:
+    return "-";
+  case OP_MULTIPLICATE:
+    return "*";
+  case OP_DIVIDE:
+    return "/";
   }
   return "?";
 }
@@ -92,7 +123,8 @@ MathTest::MathTest(int count) : count(count), correct_count(0) {
   }
 }
 
-MathTest::MathTest(int count, int min, int max) : count(count), correct_count(0) {
+MathTest::MathTest(int count, int min, int max)
+    : count(count), correct_count(0) {
   tasks = new Task[count];
   user_answers = new int[count];
   answered = new bool[count];
@@ -123,14 +155,14 @@ MathTest::~MathTest() {
 
 std::string MathTest::format_question(int index) const {
   std::ostringstream oss;
-  oss << tasks[index].num1 << " "
-      << op_symbol(tasks[index].op) << " "
+  oss << tasks[index].num1 << " " << op_symbol(tasks[index].op) << " "
       << tasks[index].num2;
   return oss.str();
 }
 
 bool MathTest::submit_answer(int index, int answer) {
-  if (index < 0 || index >= count) return false;
+  if (index < 0 || index >= count)
+    return false;
 
   if (answered[index]) {
     return user_answers[index] == tasks[index].answer;
@@ -140,7 +172,8 @@ bool MathTest::submit_answer(int index, int answer) {
   user_answers[index] = answer;
 
   bool correct = (answer == tasks[index].answer);
-  if (correct) ++correct_count;
+  if (correct)
+    ++correct_count;
   return correct;
 }
 
@@ -153,12 +186,17 @@ void MathTest::reset_answers() {
 }
 
 char MathTest::get_mark() const {
-  if (count <= 0) return 'F';
+  if (count <= 0)
+    return 'F';
   double ratio = static_cast<double>(correct_count) / count;
-  if (ratio >= 0.9) return 'A';
-  if (ratio >= 0.7) return 'B';
-  if (ratio >= 0.4) return 'C';
-  if (ratio >= 0.2) return 'D';
+  if (ratio >= 0.9)
+    return 'A';
+  if (ratio >= 0.7)
+    return 'B';
+  if (ratio >= 0.4)
+    return 'C';
+  if (ratio >= 0.2)
+    return 'D';
   return 'F';
 }
 
@@ -182,7 +220,7 @@ void MathTest::run() {
 
 void MathTest::show_statistics() const {
   const int label_w = 12;
-  const int data_w  = 8;
+  const int data_w = 8;
 
   std::cout << "|" << std::setw(label_w) << "No" << " |";
   for (int i = 0; i < count; ++i)
@@ -190,10 +228,12 @@ void MathTest::show_statistics() const {
   std::cout << "\n";
 
   std::cout << "+";
-  for (int i = 0; i < label_w + 1; ++i) std::cout << "-";
+  for (int i = 0; i < label_w + 1; ++i)
+    std::cout << "-";
   std::cout << "+";
   for (int i = 0; i < count; ++i) {
-    for (int j = 0; j < data_w + 1; ++j) std::cout << "-";
+    for (int j = 0; j < data_w + 1; ++j)
+      std::cout << "-";
     std::cout << "+";
   }
   std::cout << "\n";
@@ -215,7 +255,8 @@ void MathTest::show_statistics() const {
 
   std::cout << "|" << std::setw(label_w) << "Result" << " |";
   for (int i = 0; i < count; ++i) {
-    const char* r = (answered[i] && user_answers[i] == tasks[i].answer) ? "+" : "-";
+    const char *r =
+        (answered[i] && user_answers[i] == tasks[i].answer) ? "+" : "-";
     std::cout << std::setw(data_w) << r << " |";
   }
   std::cout << "\n\n";
