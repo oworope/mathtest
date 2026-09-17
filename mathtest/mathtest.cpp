@@ -1,4 +1,5 @@
 #include "mathtest.hpp"
+#include <cassert>
 #include <iomanip>
 #include <iostream>
 #include <limits>
@@ -114,6 +115,7 @@ static const char *op_symbol(Operation op) {
 }
 
 MathTest::MathTest(int count) : count(count), correct_count(0) {
+  assert(count > 0);
   tasks = new Task[count];
   user_answers = new int[count];
   answered = new bool[count];
@@ -125,6 +127,8 @@ MathTest::MathTest(int count) : count(count), correct_count(0) {
 
 MathTest::MathTest(int count, int min, int max)
     : count(count), correct_count(0) {
+  assert(count > 0);
+  assert(max >= min);
   tasks = new Task[count];
   user_answers = new int[count];
   answered = new bool[count];
@@ -137,6 +141,8 @@ MathTest::MathTest(int count, int min, int max)
 
 MathTest::MathTest(int count, int min, int max, Operation op)
     : count(count), correct_count(0) {
+  assert(count > 0);
+  assert(max >= min);
   tasks = new Task[count];
   user_answers = new int[count];
   answered = new bool[count];
