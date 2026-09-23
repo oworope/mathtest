@@ -1,10 +1,10 @@
 #include "mathtest.hpp"
-#include <cassert>
 #include <iomanip>
 #include <iostream>
 #include <limits>
 #include <random>
 #include <sstream>
+#include <stdexcept>
 
 Task::Task() {
   std::random_device rd;
@@ -15,26 +15,10 @@ Task::Task() {
   num2 = distrib(gen);
   int oper = distrib2(gen);
   switch (oper) {
-  case 1: {
-    op = OP_ADD;
-    answer = num1 + num2;
-    break;
-  }
-  case 2: {
-    op = OP_SUBTRACT;
-    answer = num1 - num2;
-    break;
-  }
-  case 3: {
-    op = OP_MULTIPLICATE;
-    answer = num1 * num2;
-    break;
-  }
-  case 4: {
-    op = OP_DIVIDE;
-    answer = num1 / num2;
-    break;
-  }
+  case 1: op = OP_ADD;          answer = num1 + num2; break;
+  case 2: op = OP_SUBTRACT;     answer = num1 - num2; break;
+  case 3: op = OP_MULTIPLICATE; answer = num1 * num2; break;
+  default: op = OP_DIVIDE;      answer = num1 / num2; break;
   }
 }
 
@@ -47,26 +31,10 @@ Task::Task(int min, int max) {
   num2 = distrib(gen);
   int oper = distrib2(gen);
   switch (oper) {
-  case 1: {
-    op = OP_ADD;
-    answer = num1 + num2;
-    break;
-  }
-  case 2: {
-    op = OP_SUBTRACT;
-    answer = num1 - num2;
-    break;
-  }
-  case 3: {
-    op = OP_MULTIPLICATE;
-    answer = num1 * num2;
-    break;
-  }
-  case 4: {
-    op = OP_DIVIDE;
-    answer = num1 / num2;
-    break;
-  }
+  case 1: op = OP_ADD;          answer = num1 + num2; break;
+  case 2: op = OP_SUBTRACT;     answer = num1 - num2; break;
+  case 3: op = OP_MULTIPLICATE; answer = num1 * num2; break;
+  default: op = OP_DIVIDE;      answer = num1 / num2; break;
   }
 }
 
@@ -76,46 +44,39 @@ Task::Task(int min, int max, Operation operation) {
   std::uniform_int_distribution<int> distrib(min, max);
   num1 = distrib(gen);
   num2 = distrib(gen);
-  switch (operation) {
-  case OP_ADD: {
-    op = OP_ADD;
-    answer = num1 + num2;
-    break;
-  }
-  case OP_SUBTRACT: {
-    op = OP_SUBTRACT;
-    answer = num1 - num2;
-    break;
-  }
-  case OP_MULTIPLICATE: {
-    op = OP_MULTIPLICATE;
-    answer = num1 * num2;
-    break;
-  }
-  case OP_DIVIDE: {
-    op = OP_DIVIDE;
-    answer = num1 / num2;
-    break;
-  }
+  op = operation;
+  if (op == OP_DIVIDE && num2 == 0) num2 = 1; // ! /0
+  switch (op) {
+  case OP_ADD:          answer = num1 + num2; break;
+  case OP_SUBTRACT:     answer = num1 - num2; break;
+  case OP_MULTIPLICATE: answer = num1 * num2; break;
+  case OP_DIVIDE:       answer = num1 / num2; break;
   }
 }
 
 static const char *op_symbol(Operation op) {
   switch (op) {
-  case OP_ADD:
-    return "+";
-  case OP_SUBTRACT:
-    return "-";
-  case OP_MULTIPLICATE:
-    return "*";
-  case OP_DIVIDE:
-    return "/";
+  case OP_ADD:          return "+";
+  case OP_SUBTRACT:     return "-";
+  case OP_MULTIPLICATE: return "*";
+  case OP_DIVIDE:       return "/";
   }
   return "?";
 }
 
+static void check_count(int count) {
+  if (count <= 0)
+    throw std::invalid_argument("MathTest: count must be > 0");
+}
+
+static void check_range(int min, int max) {
+  if (max < min)
+    throw std::invalid_argument("MathTest: max must be >= min");
+}
+
+
 MathTest::MathTest(int count) : count(count), correct_count(0) {
-  assert(count > 0);
+  check_count(count);
   tasks = new Task[count];
   user_answers = new int[count];
   answered = new bool[count];
@@ -127,8 +88,8 @@ MathTest::MathTest(int count) : count(count), correct_count(0) {
 
 MathTest::MathTest(int count, int min, int max)
     : count(count), correct_count(0) {
-  assert(count > 0);
-  assert(max >= min);
+  check_count(count);
+  check_range(min, max);
   tasks = new Task[count];
   user_answers = new int[count];
   answered = new bool[count];
@@ -141,8 +102,8 @@ MathTest::MathTest(int count, int min, int max)
 
 MathTest::MathTest(int count, int min, int max, Operation op)
     : count(count), correct_count(0) {
-  assert(count > 0);
-  assert(max >= min);
+  check_count(count);
+  check_range(min, max);
   tasks = new Task[count];
   user_answers = new int[count];
   answered = new bool[count];
@@ -160,6 +121,8 @@ MathTest::~MathTest() {
 }
 
 std::string MathTest::format_question(int index) const {
+  if (index < 0 || index >= count)
+    throw std::out_of_range("format_question: index out of range");
   std::ostringstream oss;
   oss << tasks[index].num1 << " " << op_symbol(tasks[index].op) << " "
       << tasks[index].num2;
@@ -168,18 +131,16 @@ std::string MathTest::format_question(int index) const {
 
 bool MathTest::submit_answer(int index, int answer) {
   if (index < 0 || index >= count)
-    return false;
+    throw std::out_of_range("submit_answer: index out of range");
 
-  if (answered[index]) {
+  if (answered[index])
     return user_answers[index] == tasks[index].answer;
-  }
 
   answered[index] = true;
   user_answers[index] = answer;
 
   bool correct = (answer == tasks[index].answer);
-  if (correct)
-    ++correct_count;
+  if (correct) ++correct_count;
   return correct;
 }
 
@@ -192,17 +153,12 @@ void MathTest::reset_answers() {
 }
 
 char MathTest::get_mark() const {
-  if (count <= 0)
-    return 'F';
+  if (count <= 0) return 'F';
   double ratio = static_cast<double>(correct_count) / count;
-  if (ratio >= 0.9)
-    return 'A';
-  if (ratio >= 0.7)
-    return 'B';
-  if (ratio >= 0.4)
-    return 'C';
-  if (ratio >= 0.2)
-    return 'D';
+  if (ratio >= 0.9) return 'A';
+  if (ratio >= 0.7) return 'B';
+  if (ratio >= 0.4) return 'C';
+  if (ratio >= 0.2) return 'D';
   return 'F';
 }
 
@@ -221,7 +177,6 @@ void MathTest::run() {
     }
     submit_answer(i, ans);
   }
-  show_statistics();
 }
 
 void MathTest::show_statistics() const {
@@ -234,12 +189,10 @@ void MathTest::show_statistics() const {
   std::cout << "\n";
 
   std::cout << "+";
-  for (int i = 0; i < label_w + 1; ++i)
-    std::cout << "-";
+  for (int i = 0; i < label_w + 1; ++i) std::cout << "-";
   std::cout << "+";
   for (int i = 0; i < count; ++i) {
-    for (int j = 0; j < data_w + 1; ++j)
-      std::cout << "-";
+    for (int j = 0; j < data_w + 1; ++j) std::cout << "-";
     std::cout << "+";
   }
   std::cout << "\n";
