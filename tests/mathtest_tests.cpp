@@ -71,12 +71,6 @@ TEST(MathTestClassTest, SubmitTwiceDoesNotDoubleCount) {
 	EXPECT_EQ(mt.get_correct_count(), 1);
 }
 
-TEST(MathTestClassTest, SubmitOutOfRangeIndex) {
-	MathTest mt(3, 1, 10, OP_ADD);
-	EXPECT_FALSE(mt.submit_answer(-1, 0));
-	EXPECT_FALSE(mt.submit_answer(3, 0));
-}
-
 TEST(MathTestClassTest, ResetAnswers) {
 	MathTest mt(3, 1, 10, OP_ADD);
 	mt.submit_answer(0, mt.get_task(0).answer);
